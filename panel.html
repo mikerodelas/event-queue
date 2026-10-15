@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#f5f5f7">
+<meta name="robots" content="noindex">
+<title>Queue Control</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Crect width=%2264%22 height=%2264%22 rx=%2214%22 fill=%22%230071e3%22/%3E%3Ctext x=%2232%22 y=%2243%22 font-family=%22Arial%22 font-size=%2230%22 font-weight=%22700%22 fill=%22white%22 text-anchor=%22middle%22%3EQ%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body class="view-panel">
+<script>window.Q_ENV = { target: 'pages', view: 'panel', store: (new URLSearchParams(location.search).get('store') || '').toUpperCase().replace(/[^A-Z0-9 _-]/g, '') };</script>
+<div class="panel">
+  <!-- Loading -->
+  <section id="s-loading" class="center-fill"><div class="spinner"></div><div class="muted">Loading…</div></section>
+
+  <!-- Login -->
+  <section id="s-login" class="hidden">
+    <div class="login-card">
+      <div class="muted small" id="login-ev">Queue control</div>
+      <h1 id="login-store">Store</h1>
+      <div class="muted">Enter the store PIN to manage this queue.</div>
+      <form id="login-form" autocomplete="off">
+        <input id="pin" class="input pin-input num" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="12" placeholder="••••••" aria-label="Store PIN" required>
+        <button id="login-btn" class="btn btn-primary btn-xl" type="submit">Unlock</button>
+      </form>
+      <p style="margin-top:18px"><a id="back-link" class="muted small" target="_top" href="#">← All stores</a></p>
+    </div>
+  </section>
+
+  <!-- Counter picker -->
+  <section id="s-counter" class="hidden">
+    <div class="login-card" style="max-width:520px">
+      <h1>Which counter are you?</h1>
+      <div class="muted">Numbers you call will be shown on the display under this counter.</div>
+      <div id="counter-pick" class="counter-pick"></div>
+    </div>
+  </section>
+
+  <!-- Main -->
+  <section id="s-main" class="hidden">
+    <header class="topbar">
+      <div class="title"><b id="t-store">Store</b><span><span id="conn" class="dot"></span> <span id="t-sub">Live</span></span></div>
+      <button id="btn-counter" class="chip-btn" type="button">Counter 1</button>
+      <button id="btn-lock" class="chip-btn" type="button" title="Sign out">Lock</button>
+    </header>
+
+    <div class="card hero">
+      <div class="label" id="hero-label">Now serving</div>
+      <div class="big num empty" id="hero-num">—</div>
+      <div class="who" id="hero-who"></div>
+      <div class="meta" id="hero-meta">Tap “Call next” to start.</div>
+    </div>
+
+    <div class="actions-main">
+      <button id="btn-next" class="btn btn-primary btn-xl" type="button">Call next</button>
+      <div class="actions-row">
+        <button id="btn-recall" class="btn" type="button">Recall</button>
+        <button id="btn-noshow" class="btn btn-warn" type="button">No-show</button>
+        <button id="btn-done" class="btn btn-ok" type="button">Done</button>
+      </div>
+    </div>
+
+    <form id="manual" class="manual" autocomplete="off">
+      <input id="manual-wb" class="input num" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="5" placeholder="Call a specific wristband #" aria-label="Wristband number">
+      <button class="btn btn-ghost" type="submit">Call</button>
+    </form>
+
+    <div class="stats">
+      <div class="stat"><b class="num" id="st-waiting">0</b><span>Waiting</span></div>
+      <div class="stat"><b class="num" id="st-serving">0</b><span>Serving</span></div>
+      <div class="stat"><b class="num" id="st-served">0</b><span>Served</span></div>
+      <div class="stat"><b class="num" id="st-noshow">0</b><span>Missed</span></div>
+    </div>
+
+    <div id="counters-strip" class="counters-strip"></div>
+
+    <button id="open-style" class="style-link" type="button">
+      <div><b>Display style</b><span>Colors &amp; background image for all queue displays</span></div>
+      <div class="sw" id="style-sw"></div>
+    </button>
+
+    <div class="tabs" role="tablist">
+      <button data-tab="waiting" class="on" type="button">Up next<span class="cnt" id="c-waiting"></span></button>
+      <button data-tab="missed" type="button">Missed<span class="cnt" id="c-missed"></span></button>
+      <button data-tab="served" type="button">Served<span class="cnt" id="c-served"></span></button>
+      <button data-tab="review" type="button">Review<span class="cnt" id="c-review"></span></button>
+    </div>
+    <div id="list" class="list"></div>
+  </section>
+
+  <!-- Display style editor (global theme for every store's display) -->
+  <section id="s-theme" class="hidden">
+    <header class="topbar">
+      <button id="th-back" class="chip-btn" type="button">‹ Back</button>
+      <div class="title" style="text-align:center"><b>Display style</b><span>Applies to all store displays</span></div>
+      <button id="th-save" class="btn btn-primary btn-sm" type="button">Save</button>
+    </header>
+
+    <div class="pv" id="pv">
+      <div class="pv-img" id="pv-img"></div>
+      <div class="pv-in">
+        <div class="pv-head"><div><div class="pv-ev" id="pv-ev">LAUNCH</div><div class="pv-st" id="pv-st">STORE</div></div><div class="pv-clock">11:30 AM</div></div>
+        <div class="pv-body">
+          <div class="pv-grid">
+            <div class="pv-tile hot"><span>COUNTER 1</span><b class="num">012</b></div>
+            <div class="pv-tile"><span>COUNTER 2</span><b class="num">011</b></div>
+            <div class="pv-tile"><span>COUNTER 3</span><b class="num">010</b></div>
+            <div class="pv-tile"><span>COUNTER 4</span><b class="idle">—</b></div>
+          </div>
+          <div class="pv-side">
+            <div class="pv-box"><span>NEXT IN LINE</span><div class="pv-next num"><i class="first">013</i><i>014</i><i>015</i><i>016</i></div></div>
+            <div class="pv-box"><span>MISSED NUMBERS</span><div class="num"><em>004</em><em>007</em></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="th-sub">Live preview. Displays update within a few seconds after you save.</div>
+    <div id="th-warn" class="th-warn hidden"></div>
+
+    <h4 class="th-h">Presets</h4>
+    <div class="presets" id="presets"></div>
+
+    <h4 class="th-h">Colors</h4>
+    <div class="card th-list" id="th-colors"></div>
+
+    <h4 class="th-h">Background image</h4>
+    <div class="card th-list">
+      <div class="th-img">
+        <div class="th-thumb" id="th-thumb">None</div>
+        <div>
+          <div class="btns">
+            <label class="btn btn-ghost btn-sm file-btn">Upload image<input id="th-file" type="file" accept="image/jpeg,image/png,image/webp,image/*"></label>
+            <button id="th-img-remove" class="btn btn-ghost btn-sm" type="button">Remove</button>
+          </div>
+          <div class="small muted">Landscape 16:9 works best. Auto-resized to 1920 px.</div>
+        </div>
+      </div>
+      <div class="th-row"><div class="lbl"><b>Image darkness</b><span>Keeps numbers readable over the photo</span></div><input type="range" id="th-dim" min="0" max="90" step="5"><div class="val" id="th-dim-v"></div></div>
+      <div class="th-row"><div class="lbl"><b>Card opacity</b><span>Lower lets more of the image show</span></div><input type="range" id="th-alpha" min="30" max="100" step="5"><div class="val" id="th-alpha-v"></div></div>
+    </div>
+
+    <div class="th-actions">
+      <button id="th-reset" class="btn btn-ghost" type="button">Reset to default</button>
+      <button id="th-save2" class="btn btn-primary" type="button">Save for all displays</button>
+    </div>
+  </section>
+</div>
+
+<script src="config.js"></script>
+<script src="assets/core.js"></script>
+<script src="assets/panel.js"></script>
+</body>
+</html>

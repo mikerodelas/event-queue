@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#000000">
+<meta name="robots" content="noindex">
+<title>Queue Display</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Crect width=%2264%22 height=%2264%22 rx=%2214%22 fill=%22%230071e3%22/%3E%3Ctext x=%2232%22 y=%2243%22 font-family=%22Arial%22 font-size=%2230%22 font-weight=%22700%22 fill=%22white%22 text-anchor=%22middle%22%3EQ%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body class="view-display">
+<script>window.Q_ENV = { target: 'pages', view: 'display', store: (new URLSearchParams(location.search).get('store') || '').toUpperCase().replace(/[^A-Z0-9 _-]/g, '') };</script>
+<div class="d-bgimg" id="d-bgimg"></div>
+<div class="display" id="display">
+  <header class="d-head">
+    <div>
+      <div class="ev" id="d-ev">Launch</div>
+      <div class="st" id="d-store">STORE</div>
+    </div>
+    <div class="clock num" id="d-clock">--:--</div>
+  </header>
+
+  <section class="d-body">
+    <div class="d-serving">
+      <div class="d-label">Now serving</div>
+      <div class="d-grid" id="d-grid"></div>
+    </div>
+    <aside class="d-side">
+      <div class="d-box">
+        <div class="d-label">Next in line</div>
+        <div class="d-next num" id="d-next"><div class="d-empty">—</div></div>
+      </div>
+      <div class="d-box grow">
+        <div class="d-label">Missed numbers</div>
+        <div class="d-missed num" id="d-missed"></div>
+        <div class="d-missed-note" id="d-missed-note">If your number is listed here, please approach any counter.</div>
+      </div>
+    </aside>
+  </section>
+
+  <footer class="d-foot">
+    <div>Please have your wristband and a valid ID ready.</div>
+    <div class="stats-inline"><span class="d-conn"><span class="dot" id="d-dot"></span><span id="d-conn-t">Live</span></span>
+      &nbsp;·&nbsp; Waiting<b class="num" id="d-waiting">0</b> · Served<b class="num" id="d-served">0</b></div>
+  </footer>
+
+  <div class="d-tools">
+    <button type="button" id="t-sound">Sound: on</button>
+    <button type="button" id="t-voice">Voice: on</button>
+    <button type="button" id="t-full">Fullscreen</button>
+  </div>
+</div>
+
+<div class="sound-gate" id="gate">
+  <b>Tap to start the queue display</b>
+  <span>This enables the chime and voice announcements. Then put the screen in fullscreen.</span>
+</div>
+<div class="callout hidden" id="callout"><div class="inner"><div class="l1">Now serving</div><div class="l2 num" id="co-num">000</div><div class="l3" id="co-ctr">Counter 1</div></div></div>
+
+<script src="config.js"></script>
+<script src="assets/core.js"></script>
+<script src="assets/display.js"></script>
+</body>
+</html>

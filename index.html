@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#f5f5f7">
+<meta name="robots" content="noindex">
+<title>Launch Queue</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Crect width=%2264%22 height=%2264%22 rx=%2214%22 fill=%22%230071e3%22/%3E%3Ctext x=%2232%22 y=%2243%22 font-family=%22Arial%22 font-size=%2230%22 font-weight=%22700%22 fill=%22white%22 text-anchor=%22middle%22%3EQ%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body class="view-landing">
+<script>window.Q_ENV = { target: 'pages', view: 'landing', store: (new URLSearchParams(location.search).get('store') || '').toUpperCase().replace(/[^A-Z0-9 _-]/g, '') };</script>
+<main class="landing">
+  <div class="eyebrow">Queue system</div>
+  <h1 id="ev-title">Launch Queue</h1>
+  <p class="lead">Pick your store. Staff use the <b>Control panel</b> (store PIN required). Put the <b>Queue display</b> on the TV or tablet facing customers.</p>
+  <div id="stores" class="store-grid">
+    <div class="card center-fill" style="min-height:140px"><div class="spinner"></div></div>
+  </div>
+</main>
+
+<script src="config.js"></script>
+<script src="assets/core.js"></script>
+<script src="assets/landing.js"></script>
+</body>
+</html>
