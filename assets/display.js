@@ -31,12 +31,13 @@
     if (n === 3) return [3, 1];
     if (n === 4) return [2, 2];
     if (n <= 6) return [3, 2];
+    if (n <= 8) return [4, 2];
     if (n <= 9) return [3, 3];
     return [4, 3];
   }
 
   function buildTiles(counters) {
-    var key = counters.map(function (c) { return c.no; }).join(',');
+    var key = counters.map(function (c) { return c.no + ':' + (c.label || ''); }).join(',');
     if (key === S.counterKey) return;
     S.counterKey = key;
     var shape = gridShape(counters.length);
@@ -44,7 +45,7 @@
     g.style.gridTemplateColumns = 'repeat(' + shape[0] + ', 1fr)';
     g.style.gridTemplateRows = 'repeat(' + shape[1] + ', 1fr)';
     g.innerHTML = counters.map(function (c) {
-      return '<div class="tile" id="tile-' + c.no + '"><div class="cn">Counter ' + c.no + '</div><div class="wb num idle">—</div></div>';
+      return '<div class="tile" id="tile-' + c.no + '"><div class="cn">' + Q.esc(c.label || 'Counter ' + c.no) + '</div><div class="wb num idle">—</div></div>';
     }).join('');
     sizeTiles();
   }
@@ -132,10 +133,10 @@
       tile._flashT = setTimeout(function () { tile.classList.remove('flash'); }, 5200);
     }
     $('co-num').textContent = label;
-    $('co-ctr').textContent = 'Counter ' + c.no;
+    $('co-ctr').textContent = c.label || 'Counter ' + c.no;
     $('callout').classList.remove('hidden');
     chime();
-    var spoken = 'Number ' + c.wb + ', please proceed to counter ' + c.no + '.';
+    var spoken = 'Number ' + c.wb + ', please proceed to ' + (c.custom ? c.label : 'counter ' + c.no) + '.';
     setTimeout(function () {
       speak(spoken).then(function () {
         setTimeout(function () {

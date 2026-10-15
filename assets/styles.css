@@ -297,3 +297,20 @@ body.view-display {
 .th-actions .btn { flex: 1; }
 .file-btn { position: relative; overflow: hidden; }
 .file-btn input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+
+/* ================= PANEL · Counter manager ================= */
+.ct-badge { min-width: 34px; height: 34px; border-radius: 10px; background: var(--accent-soft); color: var(--accent); display: inline-flex; align-items: center; justify-content: center; font-size: 17px; padding: 0 8px; }
+.ct-step { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 8px; }
+.ct-step .lbl b { display: block; font-size: 16px; }
+.ct-step .lbl span { font-size: 12px; color: var(--text-2); }
+.stepper { display: flex; align-items: center; gap: 4px; background: var(--surface-2); border-radius: 12px; padding: 4px; }
+.stepper button { width: 44px; height: 44px; border: 0; border-radius: 9px; background: var(--surface); box-shadow: var(--shadow); font-size: 24px; font-weight: 600; cursor: pointer; color: var(--accent); }
+.stepper button[disabled] { color: var(--text-3); box-shadow: none; cursor: not-allowed; }
+.stepper b { min-width: 44px; text-align: center; font-size: 22px; }
+.ct-no { width: 30px; height: 30px; border-radius: 8px; background: var(--surface-2); display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex: 0 0 auto; }
+.ct-name { flex: 1; min-height: 40px; font-size: 15px; }
+.ct-state { font-size: 12px; font-weight: 600; color: var(--text-2); min-width: 78px; text-align: right; }
+.ct-state.busy { color: var(--warn); }
+.ct-state.new { color: var(--ok); }
+.th-row.removing { opacity: .45; }
+.counter-pick button small { display: block; font-size: 11px; color: var(--text-3); margin-top: 2px; }

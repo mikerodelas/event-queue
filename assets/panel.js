@@ -7,7 +7,13 @@
   var poll = null;
 
   function show(id) {
-    ['s-loading', 's-login', 's-counter', 's-main', 's-theme'].forEach(function (s) { $(s).classList.toggle('hidden', s !== id); });
+    ['s-loading', 's-login', 's-counter', 's-main', 's-theme', 's-counters'].forEach(function (s) { $(s).classList.toggle('hidden', s !== id); });
+  }
+
+  /** Display label for a counter number (custom name or "Counter N"). */
+  function cl(no) {
+    var c = S.snap && S.snap.counters.filter(function (x) { return x.no === +no; })[0];
+    return (c && c.label) || ('Counter ' + no);
   }
 
   if (!STORE) {
@@ -47,7 +53,8 @@
   function pickCounter() {
     var snap = S.snap;
     $('counter-pick').innerHTML = snap.counters.map(function (c) {
-      return '<button type="button" data-c="' + c.no + '" class="' + (c.wb ? 'busy' : '') + '"><b>Counter ' + c.no + '</b><span class="num">' +
+      return '<button type="button" data-c="' + c.no + '" class="' + (c.wb ? 'busy' : '') + '"><b>' + Q.esc(c.label || 'Counter ' + c.no) + '</b>' +
+        (c.custom ? '<small>Counter ' + c.no + '</small>' : '') + '<span class="num">' +
         (c.wb ? 'Serving ' + Q.pad(c.wb, snap.pad) : 'Free') + '</span></button>';
     }).join('');
     show('s-counter');
@@ -68,7 +75,7 @@
   /* ---------- Data ---------- */
   function setConn(ok) {
     $('conn').classList.toggle('off', !ok);
-    $('t-sub').textContent = ok ? 'Live · Counter ' + S.counter : 'Reconnecting…';
+    $('t-sub').textContent = ok ? 'Live · ' + cl(S.counter) : 'Reconnecting…';
   }
 
   function accept(snap) {
@@ -82,6 +89,11 @@
       S.counters = res.counters;
       setConn(true);
       accept(res.snapshot);
+      if (!first && S.counter > S.counters && !$('s-main').classList.contains('hidden')) {
+        Q.toast(cl(S.counter) + ' was removed — please pick another counter.', 'err');
+        S.counter = 0; Q.store.del(CTR_KEY);
+        pickCounter();
+      }
       if (first) {
         if (!(S.counter >= 1 && S.counter <= S.counters)) pickCounter();
         else { show('s-main'); render(); }
@@ -109,8 +121,8 @@
       var r = res.result || {};
       var p = function (n) { return Q.pad(n, S.snap.pad); };
       if (navigator.vibrate) navigator.vibrate(15);
-      if (action === 'next') Q.toast(r.empty ? 'No one waiting right now.' : 'Called ' + p(r.wb) + ' to Counter ' + r.counter, r.empty ? '' : 'ok');
-      else if (action === 'call') Q.toast('Called ' + p(r.wb) + ' to Counter ' + r.counter, 'ok');
+      if (action === 'next') Q.toast(r.empty ? 'No one waiting right now.' : 'Called ' + p(r.wb) + ' to ' + cl(r.counter), r.empty ? '' : 'ok');
+      else if (action === 'call') Q.toast('Called ' + p(r.wb) + ' to ' + cl(r.counter), 'ok');
       else if (action === 'recall') Q.toast('Recalled ' + p(r.wb));
       else if (action === 'done') Q.toast(p(r.wb) + ' served');
       else if (action === 'noshow') Q.toast(p(r.wb) + ' moved to Missed');
@@ -160,7 +172,7 @@
     var label = Q.pad(+wb, S.snap.pad);
     if (a === 'call') {
       var c = currentHere();
-      var text = c && c.wb ? Q.pad(c.wb, S.snap.pad) + ' at Counter ' + S.counter + ' will be marked served.' : 'Show ' + label + ' on the display for Counter ' + S.counter + '.';
+      var text = c && c.wb ? Q.pad(c.wb, S.snap.pad) + ' at ' + cl(S.counter) + ' will be marked served.' : 'Show ' + label + ' on the display for ' + cl(S.counter) + '.';
       Q.confirm('Call ' + label + ' now?', text, 'Call').then(function (ok) { if (ok) act('call', { wb: wb }); });
     } else if (a === 'requeue') {
       Q.confirm('Return ' + label + ' to the queue?', 'It goes back in line by wristband number.', 'Return').then(function (ok) { if (ok) act('requeue', { wb: wb }); });
@@ -185,9 +197,11 @@
     if (!snap || $('s-main').classList.contains('hidden')) return;
     var p = function (n) { return Q.pad(n, snap.pad); };
     var cur = currentHere();
-    $('btn-counter').textContent = 'Counter ' + S.counter;
-    $('t-sub').textContent = 'Live · Counter ' + S.counter;
-    $('hero-label').textContent = 'Counter ' + S.counter + ' · Now serving';
+    $('btn-counter').textContent = cl(S.counter);
+    $('t-sub').textContent = 'Live · ' + cl(S.counter);
+    $('hero-label').textContent = cl(S.counter) + ' · Now serving';
+    $('ct-badge').textContent = snap.counters.length;
+    $('ct-summary').textContent = snap.counters.length + ' counter' + (snap.counters.length === 1 ? '' : 's') + ' · add, remove or rename';
     var has = cur && cur.wb;
     $('hero-num').textContent = has ? p(cur.wb) : '—';
     $('hero-num').classList.toggle('empty', !has);
@@ -213,7 +227,7 @@
     $('c-review').textContent = snap.review.length || '';
 
     $('counters-strip').innerHTML = snap.counters.map(function (c) {
-      return '<div class="cstrip' + (c.no === S.counter ? ' me' : '') + '"><span>Counter ' + c.no + '</span><b class="num">' + (c.wb ? p(c.wb) : '—') + '</b></div>';
+      return '<div class="cstrip' + (c.no === S.counter ? ' me' : '') + '"><span>' + Q.esc(c.label || 'Counter ' + c.no) + '</span><b class="num">' + (c.wb ? p(c.wb) : '—') + '</b></div>';
     }).join('');
     renderList();
   }
@@ -239,11 +253,11 @@
       if (snap.waiting.length > 120) html += '<div class="empty-state">+' + (snap.waiting.length - 120) + ' more</div>';
     } else if (S.tab === 'missed') {
       html = snap.noShows.map(function (w) {
-        return row(p(w.wb), Q.esc(w.name), 'Missed at Counter ' + w.counter + ' · ' + Q.ago(w.at), btn('requeue', w.wb, 'Return') + ' ' + btn('call', w.wb, 'Call', 'btn-primary'));
+        return row(p(w.wb), Q.esc(w.name), 'Missed at ' + Q.esc(cl(w.counter)) + ' · ' + Q.ago(w.at), btn('requeue', w.wb, 'Return') + ' ' + btn('call', w.wb, 'Call', 'btn-primary'));
       }).join('') || '<div class="empty-state">No missed numbers.</div>';
     } else if (S.tab === 'served') {
       html = snap.served.map(function (w) {
-        return row(p(w.wb), Q.esc(w.name), 'Counter ' + w.counter + ' · ' + Q.ago(w.at), btn('requeue', w.wb, 'Undo'));
+        return row(p(w.wb), Q.esc(w.name), Q.esc(cl(w.counter)) + ' · ' + Q.ago(w.at), btn('requeue', w.wb, 'Undo'));
       }).join('') || '<div class="empty-state">No one served yet.</div>';
     } else {
       html = snap.review.map(function (r) {
@@ -256,6 +270,101 @@
 
   // Refresh "x ago" labels between polls
   setInterval(function () { if (S.snap && !S.busy) render(); }, 15000);
+
+  /* ---------- Counter manager ---------- */
+  var MAX_COUNTERS = 12;
+  var CT = { count: 0, names: [], from: 'main', dirty: false, saving: false };
+  $('ct-max').textContent = MAX_COUNTERS;
+  $('ct-store').textContent = STORE;
+
+  function busyAt(no) {
+    var c = S.snap && S.snap.counters.filter(function (x) { return x.no === no; })[0];
+    return c && c.wb ? c.wb : 0;
+  }
+  function existing() { return S.snap ? S.snap.counters.length : 0; }
+
+  function renderCounters() {
+    var p = function (n) { return Q.pad(n, S.snap ? S.snap.pad : 3); };
+    var rows = [];
+    var shown = Math.max(CT.count, existing());
+    for (var i = 1; i <= shown; i++) {
+      var removing = i > CT.count, wb = busyAt(i), isNew = i > existing();
+      var state = removing ? 'Removed' : isNew ? 'New' : wb ? 'Serving ' + p(wb) : 'Free';
+      rows.push('<div class="th-row' + (removing ? ' removing' : '') + '"><span class="ct-no num">' + i + '</span>' +
+        '<input class="input ct-name" data-i="' + (i - 1) + '" maxlength="20" placeholder="Counter ' + i + '" value="' + Q.esc(CT.names[i - 1] || '') + '"' + (removing ? ' disabled' : '') + ' aria-label="Name for counter ' + i + '">' +
+        '<span class="ct-state' + (wb && !removing ? ' busy' : isNew ? ' new' : '') + '">' + state + '</span></div>');
+    }
+    // keep focus/caret while typing
+    var active = document.activeElement && document.activeElement.classList.contains('ct-name') ? +document.activeElement.getAttribute('data-i') : -1;
+    $('ct-list').innerHTML = rows.join('');
+    if (active >= 0) { var el = document.querySelector('.ct-name[data-i="' + active + '"]'); if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length); } }
+    $('ct-count').textContent = CT.count;
+    $('ct-minus').disabled = CT.saving || CT.count <= 1;
+    $('ct-plus').disabled = CT.saving || CT.count >= MAX_COUNTERS;
+    ['ct-save', 'ct-save2'].forEach(function (id) { $(id).disabled = CT.saving || !CT.dirty; });
+  }
+
+  function openCounters(from) {
+    if (!S.snap) return;
+    CT.from = from || 'main';
+    CT.count = existing();
+    CT.names = S.snap.counters.map(function (c) { return c.custom ? c.label : ''; });
+    CT.dirty = false; CT.saving = false;
+    show('s-counters');
+    window.scrollTo(0, 0);
+    renderCounters();
+  }
+  function closeCounters() {
+    if (CT.from === 'pick' || !(S.counter >= 1 && S.counter <= existing())) pickCounter();
+    else { show('s-main'); render(); }
+  }
+
+  $('open-counters').addEventListener('click', function () { openCounters('main'); });
+  $('pick-manage').addEventListener('click', function () { openCounters('pick'); });
+  $('ct-back').addEventListener('click', function () {
+    if (!CT.dirty) return closeCounters();
+    Q.confirm('Discard changes?', 'Your counter changes have not been saved.', 'Discard', true).then(function (ok) { if (ok) closeCounters(); });
+  });
+  $('ct-plus').addEventListener('click', function () {
+    if (CT.count >= MAX_COUNTERS) return;
+    CT.count++; CT.dirty = true; renderCounters();
+  });
+  $('ct-minus').addEventListener('click', function () {
+    if (CT.count <= 1) return;
+    var wb = busyAt(CT.count);
+    if (wb && CT.count <= existing()) {
+      return Q.toast(cl(CT.count) + ' is serving ' + Q.pad(wb, S.snap.pad) + '. Mark it Done or No-show first.', 'err');
+    }
+    CT.count--; CT.dirty = true; renderCounters();
+  });
+  $('ct-list').addEventListener('input', function (e) {
+    var i = e.target.getAttribute('data-i');
+    if (i === null) return;
+    CT.names[+i] = e.target.value; CT.dirty = true;
+    ['ct-save', 'ct-save2'].forEach(function (id) { $(id).disabled = CT.saving; });
+  });
+
+  function saveCounters() {
+    if (CT.saving || !CT.dirty) return;
+    CT.saving = true; renderCounters();
+    $('ct-save2').textContent = 'Saving…';
+    Q.api('saveCounters', { store: STORE, token: S.token, count: CT.count, names: CT.names.slice(0, CT.count) }).then(function (res) {
+      S.counters = res.counters;
+      S.snap = res.snapshot;
+      CT.dirty = false;
+      Q.toast('Saved — ' + res.counters + ' counter' + (res.counters === 1 ? '' : 's') + '. Displays update within seconds.', 'ok');
+      if (!(S.counter >= 1 && S.counter <= res.counters)) {
+        Q.store.del(CTR_KEY); S.counter = 0;
+        Q.toast('Your counter was removed — please pick another.', 'err');
+        pickCounter();
+      } else closeCounters();
+    }).catch(function (err) {
+      if (err.code === 'AUTH') return signOut(err.message);
+      Q.toast(err.message, 'err');
+    }).then(function () { CT.saving = false; $('ct-save2').textContent = 'Save counters'; if (!$('s-counters').classList.contains('hidden')) renderCounters(); });
+  }
+  $('ct-save').addEventListener('click', saveCounters);
+  $('ct-save2').addEventListener('click', saveCounters);
 
   /* ---------- Display style editor ---------- */
   var COLOR_FIELDS = [

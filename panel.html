@@ -40,6 +40,7 @@
       <h1>Which counter are you?</h1>
       <div class="muted">Numbers you call will be shown on the display under this counter.</div>
       <div id="counter-pick" class="counter-pick"></div>
+      <button id="pick-manage" class="btn btn-ghost btn-block" type="button" style="margin-top:16px">Add or rename counters</button>
     </div>
   </section>
 
@@ -81,6 +82,10 @@
 
     <div id="counters-strip" class="counters-strip"></div>
 
+    <button id="open-counters" class="style-link" type="button">
+      <div><b>Manage counters</b><span id="ct-summary">Add, remove or rename this store’s counters</span></div>
+      <b class="ct-badge num" id="ct-badge">4</b>
+    </button>
     <button id="open-style" class="style-link" type="button">
       <div><b>Display style</b><span>Colors &amp; background image for all queue displays</span></div>
       <div class="sw" id="style-sw"></div>
@@ -93,6 +98,32 @@
       <button data-tab="review" type="button">Review<span class="cnt" id="c-review"></span></button>
     </div>
     <div id="list" class="list"></div>
+  </section>
+
+  <!-- Counter manager (per store) -->
+  <section id="s-counters" class="hidden">
+    <header class="topbar">
+      <button id="ct-back" class="chip-btn" type="button">‹ Back</button>
+      <div class="title" style="text-align:center"><b>Manage counters</b><span id="ct-store">Store</span></div>
+      <button id="ct-save" class="btn btn-primary btn-sm" type="button">Save</button>
+    </header>
+
+    <div class="card ct-step">
+      <div class="lbl"><b>Number of counters</b><span>1 to <span id="ct-max">12</span> per store</span></div>
+      <div class="stepper">
+        <button id="ct-minus" type="button" aria-label="Remove a counter">−</button>
+        <b id="ct-count" class="num">4</b>
+        <button id="ct-plus" type="button" aria-label="Add a counter">+</button>
+      </div>
+    </div>
+
+    <h4 class="th-h">Counter names <span class="muted" style="text-transform:none;letter-spacing:0">(optional)</span></h4>
+    <div class="card th-list" id="ct-list"></div>
+    <div class="th-sub">Names appear on the queue display and in voice announcements (e.g. “Express”, “Pickup”). Leave blank to use “Counter N”. Removing always takes the highest-numbered counter; a counter that is serving someone can’t be removed until it’s marked Done or No-show.</div>
+
+    <div class="th-actions">
+      <button id="ct-save2" class="btn btn-primary" type="button">Save counters</button>
+    </div>
   </section>
 
   <!-- Display style editor (global theme for every store's display) -->
